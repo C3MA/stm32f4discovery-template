@@ -3,6 +3,7 @@
 #   based on work of Jonathon Thomson http://jethomson.wordpress.com     #
 #                      modified by mail@florianzahn.de                   #
 ##########################################################################
+
 TARGET:=main
 TOOLCHAIN_PATH:=~/Development/sat/bin
 TOOLCHAIN_PREFIX:=arm-none-eabi
@@ -43,17 +44,17 @@ SRC+=system_stm32f4xx.c
 SRC+=stm32f4_discovery.c
 
 # Standard Peripheral Source Files
-SRC+=stm32f4xx_rcc.c
 SRC+=misc.c
 SRC+=stm32f4xx_gpio.c
-SRC+=stm32f4xx_exti.c
-SRC+=stm32f4xx_syscfg.c
+SRC+=stm32f4xx_rcc.c
+SRC+=stm32f4xx_tim.c
+SRC+=stm32f4xx_dma.c
 
 
 CDEFS=-DSTM32F4XX
 CDEFS+=-DUSE_STDPERIPH_DRIVER
 
-MCUFLAGS=-mcpu=cortex-m4 -mthumb
+MCUFLAGS=-mcpu=cortex-m4 -mthumb -std=c99
 #MCUFLAGS=-mcpu=cortex-m4 -mthumb -mlittle-endian -mfpu=fpa -mfloat-abi=hard -mthumb-interwork
 #MCUFLAGS=-mcpu=cortex-m4 -mfpu=vfpv4-sp-d16 -mfloat-abi=hard
 COMMONFLAGS=-O$(OPTLVL) -g -Wall -Werror 
@@ -76,10 +77,14 @@ AR=$(TOOLCHAIN_PATH)/$(TOOLCHAIN_PREFIX)-ar
 GDB=$(TOOLCHAIN_PATH)/$(TOOLCHAIN_PREFIX)-gdb
 
 
-all: $(OBJ)
+bin: $(OBJ)
 	$(CC) -o $(TARGET).elf $(LDFLAGS) $(OBJ)	$(LDLIBS)
 	$(OBJCOPY) -O ihex   $(TARGET).elf $(TARGET).hex
 	$(OBJCOPY) -O binary $(TARGET).elf $(TARGET).bin
+
+
+flash: bin
+	st-flash write $(TARGET).bin 0x08000000
 
 .PHONY: clean
 
